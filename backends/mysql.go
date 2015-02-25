@@ -1,11 +1,11 @@
 package mantle
 
 import (
-	"github.com/go-sql-driver/mysql"
+	"database/sql"
+	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/vireshas/minimal_vitess_pool/pools"
 	"time"
-	"strings"
-	"strconv"
 )
 
 //cant make these guys const as []string is not allowed in consts
@@ -20,40 +20,37 @@ var MySQLPoolSize = 100
 //  Connect needs some params like db, hostAndPorts
 //  These params are read from this instance rederence
 func CreateMySQLConnection(Instance interface{}) (pools.Resource, error) {
-	
+
 	//converting interface MySQL struct type
 	mySQLInstance := Instance.(*MySQL)
-	
+
 	//this is a string of type "root:mih123@tcp(127.0.0.1:3306)/test"
 	hostNPorts := mySQLInstance.Settings.HostAndPorts
-	
-	if (hostNPorts == ""){
+
+	if hostNPorts[0] == "" {
 		panic("From MySQL: host and port not specified")
 	}
-	
-	//select db after dialing
-	db := mySQLInstance.db
 
 	//connect to host and port
-	cli, err := sql.Open("mysql", hostNPorts)
-	
+	cli, err := sql.Open("mysql", hostNPorts[0])
+
 	if err != nil {
 		panic(err)
 	}
 
 	//typecast to MySQLConn
-	return &MySQLConn{cli}, nil
+	return &MySQLConn{*cli}, nil
 }
 
 // Wrapping MySQL connection
-	//sql.db returns a db connection pointer
+//sql.db returns a db connection pointer
 type MySQLConn struct {
 	sql.DB
 }
 
 //Close a MySQL connection
 func (m *MySQLConn) Close() {
-	_ = m.Close()
+	m.Close()
 }
 
 //Gets a connection from pool and converts to MySQLConn type
@@ -79,18 +76,34 @@ type MySQL struct {
 
 func (m *MySQL) Configure(settings PoolSettings) {
 	m.Settings = settings
+	m.SetDefaults()
 }
 
+func (m *MySQL) SetDefaults() {
+	//this is poolsize
+	if m.Settings.Capacity == 0 {
+		m.Settings.Capacity = RedisPoolSize
+	}
+	//maxcapacity of the pool
+	if m.Settings.MaxCapacity == 0 {
+		m.Settings.MaxCapacity = RedisPoolSize
+	}
+	//pool timeout
+	m.Settings.Timeout = time.Minute
+
+	//create a pool finally
+	m.pool = NewPool(CreateMySQLConnection, m, m.Settings)
+}
 
 //Execute all the methods for a SQL query over here
-	//Execute MySQL commands; Also has support for select * from table
-	//Gets a client from pool, executes a cmd, puts conn back in pool
-func (m *MySQL) Select(query string) (map[string]interface, error) {
-	client, err := r.GetClient()
+//Execute MySQL commands; Also has support for select * from table
+//Gets a client from pool, executes a cmd, puts conn back in pool
+func (m *MySQL) Select(query string) (map[string]interface{}, error) {
+	client, err := m.GetConn()
 	if err != nil {
 		return nil, err
 	}
-	defer m.PutClient(client)
+	defer m.PutConn(client)
 	rows, err := client.Query(query)
 	if err != nil {
 		fmt.Println(err)
@@ -105,12 +118,12 @@ func (m *MySQL) Select(query string) (map[string]interface, error) {
 		scanArgs[i] = &values[i]
 	}
 
+	record := make(map[string]interface{})
 	for rows.Next() {
 		rows.Scan(scanArgs...)
-		record := make(map[string]interface{})
 		for i, col := range values {
 			if col != nil {
-				switch t := col.(type) {
+				switch col.(type) {
 				default:
 					panic("From MySQL: Unknown Type in type switching")
 				case bool:
@@ -120,7 +133,7 @@ func (m *MySQL) Select(query string) (map[string]interface, error) {
 				case int64:
 					record[columns[i]] = col.(int64)
 				case float64:
-					
+
 					record[columns[i]] = col.(float64)
 				case string:
 					record[columns[i]] = col.(string)
@@ -131,6 +144,6 @@ func (m *MySQL) Select(query string) (map[string]interface, error) {
 				}
 			}
 		}
-		return record, nil
 	}
+	return record, nil
 }

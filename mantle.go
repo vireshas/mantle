@@ -1,7 +1,7 @@
 package mantle
 
 import (
-	"github.com/goibibo/mantle/backends"
+	"../mantle/backends"
 )
 
 //only strings are supported
@@ -21,6 +21,12 @@ func redisConns(settings mantle.PoolSettings) *mantle.Redis {
 	redis := &mantle.Redis{}
 	redis.Configure(settings)
 	return redis
+}
+
+func mySQLConns(settings mantle.PoolSettings) *mantle.MySQL {
+	mySQL := &mantle.MySQL{}
+	mySQL.Configure(settings)
+	return mySQL
 }
 
 func memcacheConns(settings mantle.PoolSettings) *mantle.Memcache {
@@ -58,6 +64,15 @@ func (o *Orm) New() Mantle {
 		return memcacheConns(settings)
 	} else {
 		return redisConns(settings)
+	}
+}
+
+func (o *Orm) NewMySQL() *mantle.MySQL {
+	settings := getSettings(o)
+	if o.Driver == "mysql" {
+		return mySQLConns(settings)
+	} else {
+		return nil
 	}
 }
 
