@@ -1,7 +1,6 @@
 package mantle
 
 import (
-	"errors"
 	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/vireshas/minimal_vitess_pool/pools"
@@ -68,67 +67,92 @@ func (m *Memcache) Execute(cmd string, args ...interface{}) (interface{}, error)
 	return "inside GEt", nil
 }
 
-func (m *Memcache) Delete(key string) int {
+func (m *Memcache) Delete(keys ...interface{}) int {
 	mc := m.GetClient()
-	err := mc.Delete(key)
+	for _, key := range keys {
+		skey := key.(string)
+		err := mc.Delete(skey)
+		if err != nil {
+			fmt.Println("error deleting key:", err)
+		}
+	}
 	m.PutClient(mc)
-	return err
+	return 1
 }
 
-func (m *Memcache) Get(key string) (string, error) {
+func (m *Memcache) Get(key string) string {
 	mc := m.GetClient()
 	it, erm := mc.Get(key)
 	m.PutClient(mc)
 	if erm != nil {
 		errMsg := fmt.Sprintf("Error in getting key %s: %s", key, erm)
-		return nil, errors.New(errMsg)
+		fmt.Println(errMsg)
+		return ""
 	}
-	return string(it.Value), nil
+	return string(it.Value)
 }
 
-func (m *Memcache) Set(key string, value string) (bool, error) {
+func (m *Memcache) Set(key string, value interface{}) bool {
+	svalue := value.(string)
 	mc := m.GetClient()
-	erm := mc.Set(&memcache.Item{Key: key, Value: []byte(value)})
+	erm := mc.Set(&memcache.Item{Key: key, Value: []byte(svalue)})
 	m.PutClient(mc)
 	if erm != nil {
-		return false, errors.New()
+		fmt.Println(erm)
+		return false
 	}
-	return true, nil
+	return true
 }
 
-func (m *Memcache) MGet(keys []string) ([]string, error) {
+func (m *Memcache) MSet(keyValMap map[string]interface{}) bool {
+	return false
+}
+
+func (m *Memcache) MGet(keys ...interface{}) []string {
+	skeys := make([]string, len(keys))
+	for _, key := range keys {
+		skeys = append(skeys, key.(string))
+	}
 	mc := m.GetClient()
-	items, err := mc.GetMulti(keys)
+	items, err := mc.GetMulti(skeys)
 	m.PutClient(mc)
 	if err != nil {
-		return []string{}, err
+		return []string{}
 	}
-	arr := make([]string{})
-	for _, key := range keys {
+	arr := make([]string, 10)
+	for _, key := range skeys {
 		if item, ok := items[key]; ok {
 			arr = append(arr, string(item.Value))
 		} else {
 			arr = append(arr, "")
 		}
 	}
-	return arr, nil
+	return arr
 }
 
-func (m *Memcache) Expire(key string, duration int) error {
+func (m *Memcache) Expire(key string, duration int) bool {
 	mc := m.GetClient()
-	err := mc.Touch(key, duration)
+	err := mc.Touch(key, int32(duration))
 	m.PutClient(mc)
-	return err
+	if err != nil {
+		return false
+	}
+	return true
 }
 
-func (m *Memcache) SetEx(key string, duration int, val string) error {
+func (m *Memcache) Setex(key string, duration int, val interface{}) bool {
 	mc := m.GetClient()
-	erm := mc.Set(&memcache.Item{Key: key, Value: []byte(val)})
+	defer m.PutClient(mc)
+	sval := val.(string)
+	erm := mc.Set(&memcache.Item{Key: key, Value: []byte(sval)})
 	if erm != nil {
-		return fmt.Sprintf("Failed to set key: %s", erm)
+		return false
 	} else {
-		err := mc.Touch(key, duration)
-		m.PutClient(mc)
-		return err
+		err := mc.Touch(key, int32(duration))
+
+		if err != nil {
+			return false
+		}
 	}
+	return true
 }
