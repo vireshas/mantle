@@ -1,6 +1,7 @@
 package mantle
 
 import (
+	"errors"
 	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/vireshas/minimal_vitess_pool/pools"
@@ -67,44 +68,67 @@ func (m *Memcache) Execute(cmd string, args ...interface{}) (interface{}, error)
 	return "inside GEt", nil
 }
 
-func (m *Memcache) Delete(keys ...interface{}) int {
-	return 1
+func (m *Memcache) Delete(key string) int {
+	mc := m.GetClient()
+	err := mc.Delete(key)
+	m.PutClient(mc)
+	return err
 }
 
-func (m *Memcache) Get(key string) string {
+func (m *Memcache) Get(key string) (string, error) {
 	mc := m.GetClient()
 	it, erm := mc.Get(key)
 	m.PutClient(mc)
 	if erm != nil {
-		errMsg := fmt.Sprintf("Error in getting key %s", key)
-		return errMsg
+		errMsg := fmt.Sprintf("Error in getting key %s: %s", key, erm)
+		return nil, errors.New(errMsg)
 	}
-	return string(it.Value)
+	return string(it.Value), nil
 }
 
-func (m *Memcache) Set(key string, value interface{}) bool {
+func (m *Memcache) Set(key string, value string) (bool, error) {
 	mc := m.GetClient()
-	newVal := value.(string)
-	erm := mc.Set(&memcache.Item{Key: key, Value: []byte(newVal)})
+	erm := mc.Set(&memcache.Item{Key: key, Value: []byte(value)})
 	m.PutClient(mc)
 	if erm != nil {
-		return false
+		return false, errors.New()
 	}
-	return true
+	return true, nil
 }
 
-func (m *Memcache) MGet(keys ...interface{}) []string {
-	return []string{"hello world"}
+func (m *Memcache) MGet(keys []string) ([]string, error) {
+	mc := m.GetClient()
+	items, err := mc.GetMulti(keys)
+	m.PutClient(mc)
+	if err != nil {
+		return []string{}, err
+	}
+	arr := make([]string{})
+	for _, key := range keys {
+		if item, ok := items[key]; ok {
+			arr = append(arr, string(item.Value))
+		} else {
+			arr = append(arr, "")
+		}
+	}
+	return arr, nil
 }
 
-func (m *Memcache) MSet(mapOfKeyVal map[string]interface{}) bool {
-	return true
+func (m *Memcache) Expire(key string, duration int) error {
+	mc := m.GetClient()
+	err := mc.Touch(key, duration)
+	m.PutClient(mc)
+	return err
 }
 
-func (m *Memcache) Expire(key string, duration int) bool {
-	return true
-}
-
-func (m *Memcache) Setex(key string, duration int, val interface{}) bool {
-	return true
+func (m *Memcache) SetEx(key string, duration int, val string) error {
+	mc := m.GetClient()
+	erm := mc.Set(&memcache.Item{Key: key, Value: []byte(val)})
+	if erm != nil {
+		return fmt.Sprintf("Failed to set key: %s", erm)
+	} else {
+		err := mc.Touch(key, duration)
+		m.PutClient(mc)
+		return err
+	}
 }
