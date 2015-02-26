@@ -16,6 +16,10 @@ type Mantle interface {
 	Execute(cmd string, args ...interface{}) (interface{}, error)
 }
 
+type MantleSQL interface {
+	Select(key string) ([]map[string]interface{}, error)
+}
+
 //helper func
 func redisConns(settings mantle.PoolSettings) *mantle.Redis {
 	redis := &mantle.Redis{}
@@ -67,7 +71,7 @@ func (o *Orm) New() Mantle {
 	}
 }
 
-func (o *Orm) NewMySQL() *mantle.MySQL {
+func (o *Orm) NewSQL() MantleSQL {
 	settings := getSettings(o)
 	if o.Driver == "mysql" {
 		return mySQLConns(settings)

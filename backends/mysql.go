@@ -98,7 +98,7 @@ func (m *MySQL) SetDefaults() {
 //Execute all the methods for a SQL query over here
 //Execute MySQL commands; Also has support for select * from table
 //Gets a client from pool, executes a cmd, puts conn back in pool
-func (m *MySQL) Select(query string) (map[string]interface{}, error) {
+func (m *MySQL) Select(query string) ([]map[string]interface{}, error) {
 	client, err := m.GetConn()
 	if err != nil {
 		return nil, err
@@ -118,9 +118,10 @@ func (m *MySQL) Select(query string) (map[string]interface{}, error) {
 		scanArgs[i] = &values[i]
 	}
 
-	record := make(map[string]interface{})
+	records := make([]map[string]interface{}, 10)
 	for rows.Next() {
 		rows.Scan(scanArgs...)
+		record := make(map[string]interface{})
 		for i, col := range values {
 			if col != nil {
 				switch col.(type) {
@@ -144,6 +145,7 @@ func (m *MySQL) Select(query string) (map[string]interface{}, error) {
 				}
 			}
 		}
+		records = append(records, record)
 	}
-	return record, nil
+	return records, nil
 }
