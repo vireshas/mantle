@@ -49,7 +49,7 @@ func getSettings(o *Orm) mantle.PoolSettings {
 
 }
 
-//this struct is exported
+//This struct is exported
 type Orm struct {
 	//redis|memcache|cassandra
 	Driver string
@@ -61,7 +61,7 @@ type Orm struct {
 	Options map[string]string
 }
 
-//mantle is a wrapper for many nosql dbs
+//mantle  wrapper for NoSQL DBs.
 func (o *Orm) New() Mantle {
 	settings := getSettings(o)
 	if o.Driver == "memcache" {
@@ -71,6 +71,7 @@ func (o *Orm) New() Mantle {
 	}
 }
 
+//mantle  wrapper for SQL DBs.
 func (o *Orm) NewSQL() MantleSQL {
 	settings := getSettings(o)
 	if o.Driver == "mysql" {
