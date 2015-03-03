@@ -1,7 +1,11 @@
 Mantle
 ======
 
-Go wrapper for nosql dbs.
+Go wrapper for SQL and NoSQL dbs.
+Separate interface for SQL and NoSQL Datastores. Use Mantle's pooling to monitor all interactions to external strores. Idea is to monitir all external datastore interactions thorugh a common pool and strictly moniter that.
+
+1) Currently using miniminal vitess pool as a common connection pool.
+2) If this pool is unable to serve some complex fuctionality, datastores' pool would be used extending methods like get(), return_to_pool() and get_active().
 
 ####Get the package:
         go get github.com/goibibo/mantle
