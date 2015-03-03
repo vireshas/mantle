@@ -59,20 +59,18 @@ Go wrapper for nosql dbs.
                 time.Sleep(1 * time.Second)
                 fmt.Println(connection.Get("key"))           //""
 
-		//For MySQL
-		//DB query
-		query := "select * from flight_controllerdata"
+                //For MySQL
+                //DB query
+                query := "select * from flight_controllerdata"
 
-		connections := []string{"root:@tcp(127.0.0.1:3306)/bm"}
-		//Create mantle Driver with settings
-		orm := mantle.Orm{Driver: "mysql", HostAndPorts: connections}
+                connections := []string{"root:@tcp(127.0.0.1:3306)/bm"}
+                //Create mantle Driver with settings
+                orm := mantle.Orm{Driver: "mysql", HostAndPorts: connections}
 
-		// Create a new connection
-		conn := orm.NewMySQL()
+                // Create a new connection
+                conn := orm.NewMySQL()
 
-		//Get query response and print
-		response, _ := conn.Select(query)
-		fmt.Println(response)
-
-
+                //Get query response and print
+                response, _ := conn.Select(query)
+                fmt.Println(response)
         }
