@@ -112,6 +112,7 @@ func (r *Redis) SetDefaults() {
 	if err != nil {
 		panic("From Redis: select db is not a valid string")
 	}
+
 	r.db = select_db
 
 	//create a pool finally
