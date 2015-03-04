@@ -1,7 +1,7 @@
 package mantle
 
 import (
-	"../mantle/backends"
+	"github.com/goibibo/mantle/backends"
 )
 
 //only strings are supported
