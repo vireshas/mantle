@@ -18,7 +18,7 @@ func CreateMemcacheConnection(Instance interface{}) (pools.Resource, error) {
 	hostNPorts := mcInstance.Settings.HostAndPorts
 	servers := strings.Join(hostNPorts, ",")
 	fmt.Println("connecting to ", servers)
-	cli := memcache.New(servers)
+	cli := memcache.New(hostNPorts...)
 	return &MemConn{cli}, nil
 }
 

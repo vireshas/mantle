@@ -1,8 +1,8 @@
 package mantle
 
 import (
-	"../mantle/backends"
 	set "github.com/deckarep/golang-set"
+	"github.com/goibibo/mantle/backends"
 )
 
 //only strings are supported
