@@ -7,13 +7,13 @@ import (
 
 //only strings are supported
 type Mantle interface {
-	Get(key string) string
-	Set(key string, value interface{}) bool
-	Delete(keys ...interface{}) int
-	Setex(key string, duration int, value interface{}) bool
-	MGet(keys ...interface{}) []string
-	MSet(keyValMap map[string]interface{}) bool
-	Expire(key string, duration int) bool
+	Get(key string) (string, error)
+	Set(key string, value interface{}) (bool, error)
+	Delete(keys ...interface{}) (int, error)
+	Setex(key string, duration int, value interface{}) (bool, error)
+	MGet(keys ...interface{}) ([]string, error)
+	MSet(keyValMap map[string]interface{}) (bool, error)
+	Expire(key string, duration int) (bool, error)
 	Execute(cmd string, args ...interface{}) (interface{}, error)
 
 	//Set methods used by cassandra and redis

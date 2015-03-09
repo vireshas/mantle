@@ -69,48 +69,46 @@ func (m *Memcache) Execute(cmd string, args ...interface{}) (interface{}, error)
 	return "inside GEt", nil
 }
 
-func (m *Memcache) Delete(keys ...interface{}) int {
+func (m *Memcache) Delete(keys ...interface{}) (int, error) {
 	mc := m.GetClient()
 	for _, key := range keys {
 		skey := key.(string)
 		err := mc.Delete(skey)
 		if err != nil {
-			fmt.Println("error deleting key:", err)
+			return 0, err
 		}
 	}
 	m.PutClient(mc)
-	return 1
+	return 1, nil
 }
 
-func (m *Memcache) Get(key string) string {
+func (m *Memcache) Get(key string) (string, error) {
 	mc := m.GetClient()
 	it, erm := mc.Get(key)
 	m.PutClient(mc)
 	if erm != nil {
-		errMsg := fmt.Sprintf("Error in getting key %s: %s", key, erm)
-		fmt.Println(errMsg)
-		return ""
+		return "", erm
 	}
-	return string(it.Value)
+	return string(it.Value), nil
 }
 
-func (m *Memcache) Set(key string, value interface{}) bool {
+func (m *Memcache) Set(key string, value interface{}) (bool, error) {
 	svalue := value.(string)
 	mc := m.GetClient()
 	erm := mc.Set(&memcache.Item{Key: key, Value: []byte(svalue)})
 	m.PutClient(mc)
 	if erm != nil {
 		fmt.Println(erm)
-		return false
+		return false, erm
 	}
-	return true
+	return true, nil
 }
 
-func (m *Memcache) MSet(keyValMap map[string]interface{}) bool {
-	return false
+func (m *Memcache) MSet(keyValMap map[string]interface{}) (bool, error) {
+	return false, nil
 }
 
-func (m *Memcache) MGet(keys ...interface{}) []string {
+func (m *Memcache) MGet(keys ...interface{}) ([]string, error) {
 	skeys := make([]string, len(keys))
 	for _, key := range keys {
 		skeys = append(skeys, key.(string))
@@ -119,7 +117,7 @@ func (m *Memcache) MGet(keys ...interface{}) []string {
 	items, err := mc.GetMulti(skeys)
 	m.PutClient(mc)
 	if err != nil {
-		return []string{}
+		return []string{}, nil
 	}
 	arr := make([]string, 10)
 	for _, key := range skeys {
@@ -129,34 +127,34 @@ func (m *Memcache) MGet(keys ...interface{}) []string {
 			arr = append(arr, "")
 		}
 	}
-	return arr
+	return arr, nil
 }
 
-func (m *Memcache) Expire(key string, duration int) bool {
+func (m *Memcache) Expire(key string, duration int) (bool, error) {
 	mc := m.GetClient()
 	err := mc.Touch(key, int32(duration))
 	m.PutClient(mc)
 	if err != nil {
-		return false
+		return false, err
 	}
-	return true
+	return true, nil
 }
 
-func (m *Memcache) Setex(key string, duration int, val interface{}) bool {
+func (m *Memcache) Setex(key string, duration int, val interface{}) (bool, error) {
 	mc := m.GetClient()
 	defer m.PutClient(mc)
 	sval := val.(string)
 	erm := mc.Set(&memcache.Item{Key: key, Value: []byte(sval)})
 	if erm != nil {
-		return false
+		return false, erm
 	} else {
 		err := mc.Touch(key, int32(duration))
 
 		if err != nil {
-			return false
+			return false, err
 		}
 	}
-	return true
+	return true, nil
 }
 
 
