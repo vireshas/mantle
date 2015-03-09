@@ -2,6 +2,7 @@ package mantle
 
 import (
 	"../mantle/backends"
+	set "github.com/deckarep/golang-set"
 )
 
 //only strings are supported
@@ -14,6 +15,11 @@ type Mantle interface {
 	MSet(keyValMap map[string]interface{}) bool
 	Expire(key string, duration int) bool
 	Execute(cmd string, args ...interface{}) (interface{}, error)
+
+	//Set methods used by cassandra and redis
+	Smembers(key string) (set.Set, error)
+	SAdd(key string, value interface{}) (bool, error)
+	SRem(key string, value string) (bool, error)
 }
 
 type MantleSQL interface {

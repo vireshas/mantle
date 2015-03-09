@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/vireshas/minimal_vitess_pool/pools"
+	set "github.com/deckarep/golang-set"
 	"strings"
 	"time"
+	"errors"
 )
 
 var MemcachePoolSize = 10
@@ -155,4 +157,22 @@ func (m *Memcache) Setex(key string, duration int, val interface{}) bool {
 		}
 	}
 	return true
+}
+
+
+// All Set methods raise unimplemented error.
+// Raise unimplemented error
+func (m *Memcache) Smembers(key string) (set.Set, error) {
+	s := set.NewSet()
+	return s, errors.New("mantle: SETS/Smembers unimplemented for memcache datastore")
+}
+
+// Raise unimplemented error
+func (m *Memcache) SAdd(key string, value interface{}) (bool, error) {
+	return false, errors.New("mantle: SETS/SAdd unimplemented for memcache datastore")
+}
+
+// Raise unimplemented error
+func (m *Memcache) SRem(key string, value string) (bool, error) {
+	return false, errors.New("mantle: SETS/SRem unimplemented for memcache datastore")
 }
