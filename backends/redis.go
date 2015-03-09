@@ -217,7 +217,7 @@ func (r *Redis) SAdd(key string, value interface{}) (bool, error) {
 	return true, nil
 }
 
-// redis SADD implementation
+// redis SREM implementation
 func (r *Redis) SRem(key string, value string) (bool, error) {
 	_, err := r.Execute("SREM", key, value)
 	if err != nil {
