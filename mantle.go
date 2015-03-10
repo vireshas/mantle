@@ -68,7 +68,7 @@ type Orm struct {
 }
 
 //mantle  wrapper for NoSQL DBs.
-func (o *Orm) New() Mantle {
+func (o *Orm) NewNoSQL() Mantle {
 	settings := getSettings(o)
 	if o.Driver == "memcache" {
 		return memcacheConns(settings)

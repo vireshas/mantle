@@ -37,7 +37,7 @@ Separate interface for SQL and NoSQL Datastores. Use Mantle's pooling to monitor
                 //this connects to redis at localhost:6379 by default
                 //orm := mantle.Orm{}
 
-                connection := orm.New()
+                connection := orm.NewNoSQL()
 
                 fmt.Println(connection.Set("key", "value2")) //output: true
                 fmt.Println(connection.Get("key"))           //value2
