@@ -1,7 +1,6 @@
 package mantle
 
 import (
-	set "github.com/deckarep/golang-set"
 	"github.com/goibibo/mantle/backends"
 )
 
@@ -17,7 +16,7 @@ type Mantle interface {
 	Execute(cmd string, args ...interface{}) (interface{}, error)
 
 	//Set methods used by cassandra and redis
-	Smembers(key string) (set.Set, error)
+	Smembers(key string) ([]string, error)
 	SAdd(key string, value interface{}) (bool, error)
 	SRem(key string, value string) (bool, error)
 }

@@ -3,7 +3,6 @@ package mantle
 import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/vireshas/minimal_vitess_pool/pools"
-	set "github.com/deckarep/golang-set"
 	"strconv"
 	"strings"
 	"time"
@@ -193,19 +192,14 @@ func (r *Redis) Setex(key string, duration int, val interface{}) (bool, error) {
 }
 
 // redis SMEMBERS implementation
-func (r *Redis) Smembers(key string) (set.Set, error) {
-	s := set.NewSet()
+func (r *Redis) Smembers(key string) ([]string, error) {
 	val, err := redis.Values(r.Execute("SMEMBERS", key))
-	if err != nil {
-		return s, err
+	s := make([]string, len(val))
+	//Convert array of Bytes to array of string
+	for i, item := range(val){
+		s[i] = string(item.([]byte))
 	}
-	for _, item := range(val){
-		//Redis always stores set members as string; 
-		//TODO: Check if we need to handle byte converted  with type switching.
-		it := string(item.([]byte))
-		s.Add(it)
-	}
-	return s, nil
+	return s, err
 }
 
 // redis SADD implementation
