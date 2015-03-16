@@ -1,7 +1,11 @@
 Mantle
 ======
 
-Go wrapper for nosql dbs.
+Go wrapper for SQL and NoSQL dbs.
+Separate interface for SQL and NoSQL Datastores. Use Mantle's pooling to monitor all interactions to external strores. Idea is to monitir all external datastore interactions thorugh a common pool and strictly moniter that.
+
+1) Currently using miniminal vitess pool as a common connection pool.
+2) If this pool is unable to serve some complex fuctionality, datastores' pool would be used extending methods like get(), return_to_pool() and get_active().
 
 ####Get the package:
         go get github.com/goibibo/mantle
@@ -33,7 +37,7 @@ Go wrapper for nosql dbs.
                 //this connects to redis at localhost:6379 by default
                 //orm := mantle.Orm{}
 
-                connection := orm.New()
+                connection := orm.NewNoSQL()
 
                 fmt.Println(connection.Set("key", "value2")) //output: true
                 fmt.Println(connection.Get("key"))           //value2
@@ -59,4 +63,18 @@ Go wrapper for nosql dbs.
                 time.Sleep(1 * time.Second)
                 fmt.Println(connection.Get("key"))           //""
 
+                //For MySQL
+                //DB query
+                query := "select * from flight_controllerdata"
+
+                connections := []string{"root:@tcp(127.0.0.1:3306)/bm"}
+                //Create mantle Driver with settings
+                orm := mantle.Orm{Driver: "mysql", HostAndPorts: connections}
+
+                // Create a new connection
+                conn := orm.NewMySQL()
+
+                //Get query response and print
+                response, _ := conn.Select(query)
+                fmt.Println(response)
         }

@@ -6,6 +6,7 @@ import (
 	"github.com/vireshas/minimal_vitess_pool/pools"
 	"strings"
 	"time"
+	"errors"
 )
 
 var MemcachePoolSize = 10
@@ -16,7 +17,7 @@ func CreateMemcacheConnection(Instance interface{}) (pools.Resource, error) {
 	hostNPorts := mcInstance.Settings.HostAndPorts
 	servers := strings.Join(hostNPorts, ",")
 	fmt.Println("connecting to ", servers)
-	cli := memcache.New(servers)
+	cli := memcache.New(hostNPorts...)
 	return &MemConn{cli}, nil
 }
 
@@ -67,44 +68,108 @@ func (m *Memcache) Execute(cmd string, args ...interface{}) (interface{}, error)
 	return "inside GEt", nil
 }
 
-func (m *Memcache) Delete(keys ...interface{}) int {
-	return 1
+func (m *Memcache) Delete(keys ...interface{}) (int, error) {
+	mc := m.GetClient()
+	for _, key := range keys {
+		skey := key.(string)
+		err := mc.Delete(skey)
+		if err != nil {
+			return 0, err
+		}
+	}
+	m.PutClient(mc)
+	return 1, nil
 }
 
-func (m *Memcache) Get(key string) string {
+func (m *Memcache) Get(key string) (string, error) {
 	mc := m.GetClient()
 	it, erm := mc.Get(key)
 	m.PutClient(mc)
 	if erm != nil {
-		errMsg := fmt.Sprintf("Error in getting key %s", key)
-		return errMsg
+		return "", erm
 	}
-	return string(it.Value)
+	return string(it.Value), nil
 }
 
-func (m *Memcache) Set(key string, value interface{}) bool {
+func (m *Memcache) Set(key string, value interface{}) (bool, error) {
+	svalue := value.(string)
 	mc := m.GetClient()
-	newVal := value.(string)
-	erm := mc.Set(&memcache.Item{Key: key, Value: []byte(newVal)})
+	erm := mc.Set(&memcache.Item{Key: key, Value: []byte(svalue)})
 	m.PutClient(mc)
 	if erm != nil {
-		return false
+		fmt.Println(erm)
+		return false, erm
 	}
-	return true
+	return true, nil
 }
 
-func (m *Memcache) MGet(keys ...interface{}) []string {
-	return []string{"hello world"}
+func (m *Memcache) MSet(keyValMap map[string]interface{}) (bool, error) {
+	return false, nil
 }
 
-func (m *Memcache) MSet(mapOfKeyVal map[string]interface{}) bool {
-	return true
+func (m *Memcache) MGet(keys ...interface{}) ([]string, error) {
+	skeys := make([]string, len(keys))
+	for _, key := range keys {
+		skeys = append(skeys, key.(string))
+	}
+	mc := m.GetClient()
+	items, err := mc.GetMulti(skeys)
+	m.PutClient(mc)
+	if err != nil {
+		return []string{}, nil
+	}
+	arr := make([]string, 10)
+	for _, key := range skeys {
+		if item, ok := items[key]; ok {
+			arr = append(arr, string(item.Value))
+		} else {
+			arr = append(arr, "")
+		}
+	}
+	return arr, nil
 }
 
-func (m *Memcache) Expire(key string, duration int) bool {
-	return true
+func (m *Memcache) Expire(key string, duration int) (bool, error) {
+	mc := m.GetClient()
+	err := mc.Touch(key, int32(duration))
+	m.PutClient(mc)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
-func (m *Memcache) Setex(key string, duration int, val interface{}) bool {
-	return true
+func (m *Memcache) Setex(key string, duration int, val interface{}) (bool, error) {
+	mc := m.GetClient()
+	defer m.PutClient(mc)
+	sval := val.(string)
+	erm := mc.Set(&memcache.Item{Key: key, Value: []byte(sval)})
+	if erm != nil {
+		return false, erm
+	} else {
+		err := mc.Touch(key, int32(duration))
+
+		if err != nil {
+			return false, err
+		}
+	}
+	return true, nil
 }
+
+// All Set methods raise unimplemented error.
+// Raise unimplemented error
+func (m *Memcache) Smembers(key string) ([]string, error) {
+	var s []string
+	return s, errors.New("mantle: SETS/Smembers unimplemented for memcache datastore")
+}
+
+// Raise unimplemented error
+func (m *Memcache) SAdd(key string, value interface{}) (bool, error) {
+	return false, errors.New("mantle: SETS/SAdd unimplemented for memcache datastore")
+}
+
+// Raise unimplemented error
+func (m *Memcache) SRem(key string, value string) (bool, error) {
+	return false, errors.New("mantle: SETS/SRem unimplemented for memcache datastore")
+}
+

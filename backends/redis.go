@@ -112,6 +112,7 @@ func (r *Redis) SetDefaults() {
 	if err != nil {
 		panic("From Redis: select db is not a valid string")
 	}
+
 	r.db = select_db
 
 	//create a pool finally
@@ -134,58 +135,87 @@ func (r *Redis) Execute(cmd string, args ...interface{}) (interface{}, error) {
 	return client.Do(cmd, args...)
 }
 
-func (r *Redis) Delete(keys ...interface{}) int {
+func (r *Redis) Delete(keys ...interface{}) (int, error) {
 	value, err := redis.Int(r.Execute("DEL", keys...))
 	if err != nil {
-		return -1
+		return -1, err
 	}
-	return value
+	return value, nil
 }
 
-func (r *Redis) Get(key string) string {
+func (r *Redis) Get(key string) (string, error) {
 	value, err := redis.String(r.Execute("GET", key))
 	if err != nil {
-		return ""
+		return "", err
 	}
-	return value
+	return value, nil
 }
 
-func (r *Redis) Set(key string, value interface{}) bool {
+func (r *Redis) Set(key string, value interface{}) (bool, error) {
 	_, err := r.Execute("SET", key, value)
 	if err != nil {
-		return false
+		return false, err
 	}
-	return true
+	return true, nil
 }
 
-func (r *Redis) MGet(keys ...interface{}) []string {
+func (r *Redis) MGet(keys ...interface{}) ([]string, error) {
 	values, err := redis.Strings(r.Execute("MGET", keys...))
 	if err != nil {
-		return []string{}
+		return []string{}, err
 	}
-	return values
+	return values, nil
 }
 
-func (r *Redis) MSet(mapOfKeyVal map[string]interface{}) bool {
+func (r *Redis) MSet(mapOfKeyVal map[string]interface{}) (bool, error) {
 	_, err := r.Execute("MSET", redis.Args{}.AddFlat(mapOfKeyVal)...)
 	if err != nil {
-		return false
+		return false, err
 	}
-	return true
+	return true, nil
 }
 
-func (r *Redis) Expire(key string, duration int) bool {
+func (r *Redis) Expire(key string, duration int) (bool, error) {
 	_, err := r.Execute("EXPIRE", key, duration)
 	if err != nil {
-		return false
+		return false, err
 	}
-	return true
+	return true, nil
 }
 
-func (r *Redis) Setex(key string, duration int, val interface{}) bool {
+func (r *Redis) Setex(key string, duration int, val interface{}) (bool, error) {
 	_, err := r.Execute("SETEX", key, duration, val)
 	if err != nil {
-		return false
+		return false, err
 	}
-	return true
+	return true, nil
+}
+
+// redis SMEMBERS implementation
+func (r *Redis) Smembers(key string) ([]string, error) {
+	val, err := redis.Values(r.Execute("SMEMBERS", key))
+	s := make([]string, len(val))
+	//Convert array of Bytes to array of string
+	for i, item := range(val){
+		s[i] = string(item.([]byte))
+	}
+	return s, err
+}
+
+// redis SADD implementation
+func (r *Redis) SAdd(key string, value interface{}) (bool, error) {
+	_, err := r.Execute("SADD", key, value)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// redis SREM implementation
+func (r *Redis) SRem(key string, value string) (bool, error) {
+	_, err := r.Execute("SREM", key, value)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

@@ -6,14 +6,23 @@ import (
 
 //only strings are supported
 type Mantle interface {
-	Get(key string) string
-	Set(key string, value interface{}) bool
-	Delete(keys ...interface{}) int
-	Setex(key string, duration int, value interface{}) bool
-	MGet(keys ...interface{}) []string
-	MSet(keyValMap map[string]interface{}) bool
-	Expire(key string, duration int) bool
+	Get(key string) (string, error)
+	Set(key string, value interface{}) (bool, error)
+	Delete(keys ...interface{}) (int, error)
+	Setex(key string, duration int, value interface{}) (bool, error)
+	MGet(keys ...interface{}) ([]string, error)
+	MSet(keyValMap map[string]interface{}) (bool, error)
+	Expire(key string, duration int) (bool, error)
 	Execute(cmd string, args ...interface{}) (interface{}, error)
+
+	//Set methods used by cassandra and redis
+	Smembers(key string) ([]string, error)
+	SAdd(key string, value interface{}) (bool, error)
+	SRem(key string, value string) (bool, error)
+}
+
+type MantleSQL interface {
+	Select(key string) ([]map[string]interface{}, error)
 }
 
 //helper func
@@ -21,6 +30,12 @@ func redisConns(settings mantle.PoolSettings) *mantle.Redis {
 	redis := &mantle.Redis{}
 	redis.Configure(settings)
 	return redis
+}
+
+func mySQLConns(settings mantle.PoolSettings) *mantle.MySQL {
+	mySQL := &mantle.MySQL{}
+	mySQL.Configure(settings)
+	return mySQL
 }
 
 func memcacheConns(settings mantle.PoolSettings) *mantle.Memcache {
@@ -39,7 +54,7 @@ func getSettings(o *Orm) mantle.PoolSettings {
 
 }
 
-//this struct is exported
+//This struct is exported
 type Orm struct {
 	//redis|memcache|cassandra
 	Driver string
@@ -51,13 +66,23 @@ type Orm struct {
 	Options map[string]string
 }
 
-//mantle is a wrapper for many nosql dbs
-func (o *Orm) New() Mantle {
+//mantle  wrapper for NoSQL DBs.
+func (o *Orm) NewNoSQL() Mantle {
 	settings := getSettings(o)
 	if o.Driver == "memcache" {
 		return memcacheConns(settings)
 	} else {
 		return redisConns(settings)
+	}
+}
+
+//mantle  wrapper for SQL DBs.
+func (o *Orm) NewSQL() MantleSQL {
+	settings := getSettings(o)
+	if o.Driver == "mysql" {
+		return mySQLConns(settings)
+	} else {
+		return nil
 	}
 }
 
