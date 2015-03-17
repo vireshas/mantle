@@ -118,7 +118,7 @@ func (m *MySQL) Select(query string) ([]map[string]interface{}, error) {
 		scanArgs[i] = &values[i]
 	}
 
-	records := make([]map[string]interface{}, 10)
+	records := make([]map[string]interface{}, 0)
 	for rows.Next() {
 		rows.Scan(scanArgs...)
 		record := make(map[string]interface{})
