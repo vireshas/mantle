@@ -72,7 +72,7 @@ Separate interface for SQL and NoSQL Datastores. Use Mantle's pooling to monitor
                 orm := mantle.Orm{Driver: "mysql", HostAndPorts: connections}
 
                 // Create a new connection
-                conn := orm.NewMySQL()
+                conn := orm.NewSQL()
 
                 //Get query response and print
                 response, _ := conn.Select(query)
