@@ -19,6 +19,7 @@ type Mantle interface {
 	Smembers(key string) ([]string, error)
 	SAdd(key string, value interface{}) (bool, error)
 	SRem(key string, value string) (bool, error)
+	Sismember(key string, member string) (bool, error)
 }
 
 type MantleSQL interface {

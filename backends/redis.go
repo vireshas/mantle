@@ -219,3 +219,13 @@ func (r *Redis) SRem(key string, value string) (bool, error) {
 	}
 	return true, nil
 }
+
+// redis SISMEMBER implementation
+func (r *Redis) Sismember(key string, member string) (bool, error) {
+	val, err := r.Execute("SISMEMBER", key, member)
+	if err != nil {
+		return false, err
+	}
+	// val is interface; trying to convert to int64
+	return val.(int64)!=0, nil
+}

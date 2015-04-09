@@ -173,3 +173,7 @@ func (m *Memcache) SRem(key string, value string) (bool, error) {
 	return false, errors.New("mantle: SETS/SRem unimplemented for memcache datastore")
 }
 
+// Raise unimplemented error
+func (m *Memcache) Sismember(key string, member string) (bool, error) {
+	return false, errors.New("mantle: SETS/Sismember unimplemented for memcache datastore")
+}
