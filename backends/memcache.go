@@ -179,5 +179,5 @@ func (m *Memcache) Sismember(key string, member string) (bool, error) {
 }
 
 func (m *Memcache) StatsJSON() string {
-	return r.pool.StatsJSON()
+	return m.pool.StatsJSON()
 }
