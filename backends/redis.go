@@ -230,6 +230,6 @@ func (r *Redis) Sismember(key string, member string) (bool, error) {
 	return val.(int64) != 0, nil
 }
 
-func (r *Redis) StatsJSON() {
-	r.pool.StatsJSON()
+func (r *Redis) StatsJSON() string {
+	return r.pool.StatsJSON()
 }

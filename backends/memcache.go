@@ -1,12 +1,12 @@
 package mantle
 
 import (
+	"errors"
 	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/vireshas/minimal_vitess_pool/pools"
 	"strings"
 	"time"
-	"errors"
 )
 
 var MemcachePoolSize = 10
@@ -176,4 +176,8 @@ func (m *Memcache) SRem(key string, value string) (bool, error) {
 // Raise unimplemented error
 func (m *Memcache) Sismember(key string, member string) (bool, error) {
 	return false, errors.New("mantle: SETS/Sismember unimplemented for memcache datastore")
+}
+
+func (m *Memcache) StatsJSON() string {
+	return r.pool.StatsJSON()
 }

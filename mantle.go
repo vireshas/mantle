@@ -20,6 +20,9 @@ type Mantle interface {
 	SAdd(key string, value interface{}) (bool, error)
 	SRem(key string, value string) (bool, error)
 	Sismember(key string, member string) (bool, error)
+
+	//stats methods
+	StatsJSON() string
 }
 
 type MantleSQL interface {
