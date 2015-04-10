@@ -196,7 +196,7 @@ func (r *Redis) Smembers(key string) ([]string, error) {
 	val, err := redis.Values(r.Execute("SMEMBERS", key))
 	s := make([]string, len(val))
 	//Convert array of Bytes to array of string
-	for i, item := range(val){
+	for i, item := range val {
 		s[i] = string(item.([]byte))
 	}
 	return s, err
@@ -227,5 +227,9 @@ func (r *Redis) Sismember(key string, member string) (bool, error) {
 		return false, err
 	}
 	// val is interface; trying to convert to int64
-	return val.(int64)!=0, nil
+	return val.(int64) != 0, nil
+}
+
+func (r *Redis) StatsJSON() {
+	r.pool.StatsJSON()
 }

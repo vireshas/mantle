@@ -1,7 +1,7 @@
 package mantle
 
 import (
-	"github.com/vireshas/minimal_vitess_pool/pools"
+	"github.com/goibibo/minimal_vitess_pool"
 	"time"
 )
 
@@ -54,4 +54,8 @@ func newRedisFactory(connect dialAndConnect, instance interface{}) pools.Factory
 	return func() (pools.Resource, error) {
 		return connect(instance)
 	}
+}
+
+func (rp *ResourcePool) StatsJSON() string {
+	return rp.pool.StatsJSON()
 }
