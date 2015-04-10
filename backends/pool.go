@@ -1,7 +1,7 @@
 package mantle
 
 import (
-	"github.com/goibibo/minimal_vitess_pool"
+	"github.com/vireshas/minimal_vitess_pool"
 	"time"
 )
 

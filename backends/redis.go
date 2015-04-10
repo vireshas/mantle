@@ -11,7 +11,7 @@ import (
 //cant make these guys const as []string is not allowed in consts
 
 //default pool size
-var RedisPoolSize = 10
+var RedisPoolSize = 100
 
 //default host:port to connect
 var DefaultRedisConfig = []string{"localhost:6379"}
