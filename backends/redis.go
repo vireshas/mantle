@@ -204,7 +204,7 @@ func (r *Redis) Smembers(key string) ([]string, error) {
 
 // redis SADD implementation
 func (r *Redis) SAdd(key string, values ...interface{}) (bool, error) {
-	_, err := r.Execute("SADD", key, values...)
+	_, err := r.Execute("SADD", redis.Args{}.Add(key).AddFlat(values)...)
 	if err != nil {
 		return false, err
 	}
