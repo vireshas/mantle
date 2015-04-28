@@ -164,7 +164,7 @@ func (m *Memcache) Smembers(key string) ([]string, error) {
 }
 
 // Raise unimplemented error
-func (m *Memcache) SAdd(key string, value interface{}) (bool, error) {
+func (m *Memcache) SAdd(key string, values ...interface{}) (bool, error) {
 	return false, errors.New("mantle: SETS/SAdd unimplemented for memcache datastore")
 }
 
