@@ -203,8 +203,8 @@ func (r *Redis) Smembers(key string) ([]string, error) {
 }
 
 // redis SADD implementation
-func (r *Redis) SAdd(key string, value interface{}) (bool, error) {
-	_, err := r.Execute("SADD", key, value)
+func (r *Redis) SAdd(key string, values ...interface{}) (bool, error) {
+	_, err := r.Execute("SADD", key, values...)
 	if err != nil {
 		return false, err
 	}
