@@ -249,7 +249,7 @@ func (r *Redis) Sismembers(key string, members []string) ([]bool, error) {
 		if err != nil {
 			return nil, err
 		}
-		val, err1 := res.(int64)
+		err1, val := res.(int64)
 		if err1 != nil {
 			return nil, err1
 		}
