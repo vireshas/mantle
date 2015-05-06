@@ -244,12 +244,12 @@ func (r *Redis) Sismembers(key string, members []string) ([]bool, error) {
 	client.Flush()
 
 	results := make([]bool, 0, len(members))
-	for _, _ := range members {
+	for _, _ = range members {
 		res, err := client.Receive()
 		if err != nil {
 			return nil, err
 		}
-		results := append(results, res)
+		results = append(results, res)
 	}
 	return results, nil
 }
