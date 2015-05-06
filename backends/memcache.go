@@ -178,6 +178,9 @@ func (m *Memcache) Sismember(key string, member string) (bool, error) {
 	return false, errors.New("mantle: SETS/Sismember unimplemented for memcache datastore")
 }
 
+func (m *Memcache) Sismembers(key string, members []string) ([]bool, error) {
+	return false, errors.New("mantle: SETS/Sismembers unimplemented for memcache datastore")
+}
 func (m *Memcache) StatsJSON() string {
 	return m.pool.StatsJSON()
 }

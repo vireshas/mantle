@@ -20,6 +20,7 @@ type Mantle interface {
 	SAdd(key string, values ...interface{}) (bool, error)
 	SRem(key string, value string) (bool, error)
 	Sismember(key string, member string) (bool, error)
+	Sismembers(key string, members []string) ([]bool, error)
 
 	//stats methods
 	StatsJSON() string

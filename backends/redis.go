@@ -230,6 +230,30 @@ func (r *Redis) Sismember(key string, member string) (bool, error) {
 	return val.(int64) != 0, nil
 }
 
+func (r *Redis) Sismembers(key string, members []string) ([]bool, error) {
+
+	client, err := r.GetClient()
+	if err != nil {
+		return nil, err
+	}
+	defer r.PutClient(client)
+
+	for _, member := range members {
+		client.Send("SISMEMBER", key, member)
+	}
+	client.Flush()
+
+	results := make([]bool, 0, len(members))
+	for _, _ := range members {
+		res, err := client.Receive()
+		if err != nil {
+			return nil, err
+		}
+		results := append(results, res)
+	}
+	return results, nil
+}
+
 func (r *Redis) StatsJSON() string {
 	return r.pool.StatsJSON()
 }
