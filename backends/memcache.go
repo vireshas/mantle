@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-var MemcachePoolSize = 10
+var MemcachePoolSize = 25
 var DefaultMemcacheIpAndHost = []string{"localhost:11211"}
 
 func CreateMemcacheConnection(Instance interface{}) (pools.Resource, error) {
