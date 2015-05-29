@@ -3,7 +3,7 @@ package mantle
 import (
 	"errors"
 	"fmt"
-	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/goibibo/gomemcache/memcache"
 	"github.com/vireshas/minimal_vitess_pool/pools"
 	"strings"
 	"time"
