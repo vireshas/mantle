@@ -89,8 +89,8 @@ func (m *MySQL) SetDefaults() {
 		m.Settings.MaxCapacity = RedisPoolSize
 	}
 	//pool timeout
-	m.Settings.Timeout = time.Minute
-
+	m.Settings.Timeout = 0 
+        m.Settings.Capacity  = 10 
 	//create a pool finally
 	m.pool = NewPool(CreateMySQLConnection, m, m.Settings)
 }
