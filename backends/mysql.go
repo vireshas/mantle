@@ -50,7 +50,7 @@ type MySQLConn struct {
 
 //Close a MySQL connection
 func (m *MySQLConn) Close() {
-	m.Close()
+	m.DB.Close()
 }
 
 //Gets a connection from pool and converts to MySQLConn type
