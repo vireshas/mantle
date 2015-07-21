@@ -11,7 +11,7 @@ import (
 //cant make these guys const as []string is not allowed in consts
 
 //default pool size
-var MySQLPoolSize = 25
+var MySQLPoolSize = 15
 
 //This method creates a MySQL connection
 //CreateMySQLConnection is passed as a callback to pools
