@@ -7,10 +7,10 @@ Separate interface for SQL and NoSQL Datastores. Use Mantle's pooling to monitor
 1) Currently using miniminal vitess pool as a common connection pool.
 2) If this pool is unable to serve some complex fuctionality, datastores' pool would be used extending methods like get(), return_to_pool() and get_active().
 
-####Get the package:
+#### Get the package:
         go get github.com/goibibo/mantle
         
-####Code:
+#### Code:
         package main
 
         import (
