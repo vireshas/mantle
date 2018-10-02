@@ -1,15 +1,15 @@
 package mantle
 
 import (
+	"errors"
 	"fmt"
-	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/goibibo/gomemcache/memcache"
 	"github.com/vireshas/minimal_vitess_pool/pools"
 	"strings"
 	"time"
-	"errors"
 )
 
-var MemcachePoolSize = 10
+var MemcachePoolSize = 50
 var DefaultMemcacheIpAndHost = []string{"localhost:11211"}
 
 func CreateMemcacheConnection(Instance interface{}) (pools.Resource, error) {
@@ -164,7 +164,7 @@ func (m *Memcache) Smembers(key string) ([]string, error) {
 }
 
 // Raise unimplemented error
-func (m *Memcache) SAdd(key string, value interface{}) (bool, error) {
+func (m *Memcache) SAdd(key string, values ...interface{}) (bool, error) {
 	return false, errors.New("mantle: SETS/SAdd unimplemented for memcache datastore")
 }
 
@@ -173,3 +173,14 @@ func (m *Memcache) SRem(key string, value string) (bool, error) {
 	return false, errors.New("mantle: SETS/SRem unimplemented for memcache datastore")
 }
 
+// Raise unimplemented error
+func (m *Memcache) Sismember(key string, member string) (bool, error) {
+	return false, errors.New("mantle: SETS/Sismember unimplemented for memcache datastore")
+}
+
+func (m *Memcache) Sismembers(key string, members []string) ([]bool, error) {
+	return nil, errors.New("mantle: SETS/Sismembers unimplemented for memcache datastore")
+}
+func (m *Memcache) StatsJSON() string {
+	return m.pool.StatsJSON()
+}

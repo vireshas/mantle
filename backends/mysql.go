@@ -11,7 +11,7 @@ import (
 //cant make these guys const as []string is not allowed in consts
 
 //default pool size
-var MySQLPoolSize = 100
+var MySQLPoolSize = 15
 
 //This method creates a MySQL connection
 //CreateMySQLConnection is passed as a callback to pools
@@ -50,7 +50,7 @@ type MySQLConn struct {
 
 //Close a MySQL connection
 func (m *MySQLConn) Close() {
-	m.Close()
+	m.DB.Close()
 }
 
 //Gets a connection from pool and converts to MySQLConn type
@@ -89,8 +89,8 @@ func (m *MySQL) SetDefaults() {
 		m.Settings.MaxCapacity = RedisPoolSize
 	}
 	//pool timeout
-	m.Settings.Timeout = time.Minute
-
+	m.Settings.Timeout = 0 
+        m.Settings.Capacity  = 10 
 	//create a pool finally
 	m.pool = NewPool(CreateMySQLConnection, m, m.Settings)
 }

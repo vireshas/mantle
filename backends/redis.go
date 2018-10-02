@@ -11,7 +11,7 @@ import (
 //cant make these guys const as []string is not allowed in consts
 
 //default pool size
-var RedisPoolSize = 10
+var RedisPoolSize = 50
 
 //default host:port to connect
 var DefaultRedisConfig = []string{"localhost:6379"}
@@ -196,15 +196,15 @@ func (r *Redis) Smembers(key string) ([]string, error) {
 	val, err := redis.Values(r.Execute("SMEMBERS", key))
 	s := make([]string, len(val))
 	//Convert array of Bytes to array of string
-	for i, item := range(val){
+	for i, item := range val {
 		s[i] = string(item.([]byte))
 	}
 	return s, err
 }
 
 // redis SADD implementation
-func (r *Redis) SAdd(key string, value interface{}) (bool, error) {
-	_, err := r.Execute("SADD", key, value)
+func (r *Redis) SAdd(key string, values ...interface{}) (bool, error) {
+	_, err := r.Execute("SADD", redis.Args{}.Add(key).AddFlat(values)...)
 	if err != nil {
 		return false, err
 	}
@@ -218,4 +218,43 @@ func (r *Redis) SRem(key string, value string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+// redis SISMEMBER implementation
+func (r *Redis) Sismember(key string, member string) (bool, error) {
+	val, err := r.Execute("SISMEMBER", key, member)
+	if err != nil {
+		return false, err
+	}
+	// val is interface; trying to convert to int64
+	return val.(int64) != 0, nil
+}
+
+func (r *Redis) Sismembers(key string, members []string) ([]bool, error) {
+
+	client, err := r.GetClient()
+	if err != nil {
+		return nil, err
+	}
+	defer r.PutClient(client)
+
+	for _, member := range members {
+		client.Send("SISMEMBER", key, member)
+	}
+	client.Flush()
+
+	results := make([]bool, 0, len(members))
+	for _, _ = range members {
+		res, err := client.Receive()
+		if err != nil {
+			return nil, err
+		}
+		val := res.(int64) != 0
+		results = append(results, val)
+	}
+	return results, nil
+}
+
+func (r *Redis) StatsJSON() string {
+	return r.pool.StatsJSON()
 }

@@ -55,3 +55,7 @@ func newRedisFactory(connect dialAndConnect, instance interface{}) pools.Factory
 		return connect(instance)
 	}
 }
+
+func (rp *ResourcePool) StatsJSON() string {
+	return rp.pool.StatsJSON()
+}
